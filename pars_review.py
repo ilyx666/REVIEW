@@ -10,7 +10,7 @@ import pandas as pd
 import json
 
 
-with open("rewiew_href.json", "r") as f:
+with open(r"C:\Users\ilyx\Desktop\rewiew_href.json", "r") as f:
     review_dict = json.load(f)
 for a, h in review_dict.items():
     print(a)
@@ -21,13 +21,13 @@ for a, h in review_dict.items():
 
     time.sleep(5)
     k = 1080
-    for j in range(20):
+    for j in range(200):
         driver.execute_script(f"window.scrollTo(0, {k});")
-        time.sleep(1)
+        time.sleep(0.5)
         k += 500
 
     # Сохранить HTML-код страницы в файл с названием артикула:
-    with open(f'review_html/{a}.html', 'w', encoding='utf-8') as f:
+    with open(fr'C:\Users\ilyx\Desktop\review_html\{a}.html', 'w', encoding='utf-8') as f:
         f.write(driver.page_source)
 
 

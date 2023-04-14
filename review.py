@@ -15,11 +15,11 @@ pd.set_option('display.width', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_colwidth', None)
 
-df = pd.read_excel('qweqwe.xlsx')
+df = pd.read_excel(r'C:\Users\ilyx\Desktop\product.xlsx')
 review_dict = {}
 op = 0
 for i in df.id:
-    with open(f"html/{i}.html", encoding='utf-8') as file:
+    with open(fr"C:\Users\ilyx\Desktop\html\{i}.html", encoding='utf-8') as file:
         src = file.read()
 # with open(r"C:\Users\ilyx\Desktop\html\135608212.html", encoding='utf-8') as file:
 #     src = file.read()
