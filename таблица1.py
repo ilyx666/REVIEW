@@ -1,4 +1,3 @@
-
 import pandas as pd
 import requests
 import lxml
@@ -9,7 +8,6 @@ import undetected_chromedriver
 import time
 import io
 from collections import Counter
-import emoji
 
 
 # pd.set_option('display.max_columns', None)
@@ -25,12 +23,12 @@ feedback_id = []
 kolvo_ph = []
 likee = []
 tovarId = []
-banID = []
-with open(r"C:\Users\ilyx\Desktop\rewiew_href.json", "r", encoding='utf-8') as file:
+
+with open("rewiew_href.json", "r", encoding='utf-8') as file:
     rewH = json.load(file)
 
 for a, t in rewH.items():
-    with open(fr"C:\Users\ilyx\Desktop\review_html\{a}.html", encoding='utf-8') as file:
+    with open(f"review_html2/{a}.html", encoding='utf-8') as file:
         src = file.read()
     soup = BeautifulSoup(src, 'lxml')
     find_name = soup.find_all('button', class_='feedback__header')
@@ -80,17 +78,18 @@ for a, t in rewH.items():
 
 
     for i in feedback_text:
-        # try:
+        try:
             feedback.append(i.text)
-        # except UnicodeEncodeError as ex:
-        #     pass
+        except UnicodeEncodeError as ex:
+            pass
 
 
 
 
-    k = 0
+
     for i in fb_id:
         feedback_id.append(i.get('id'))
+
 
 
     for i in imageFB:
@@ -113,7 +112,7 @@ for a, t in rewH.items():
             else:
                 listt.append(0)
             break
-    for i in range(len(tovarId)-len(listt)):
+    for i in range(len(feedback_id)-len(listt)):
         listt.append(0)
 
 
@@ -132,31 +131,16 @@ for a, t in rewH.items():
     # for i in find_name:
     #     print(i.get('data-link'))
 
-# feedback_id.append('sadjhgv1231jhvgbk')
-# if len(banID) > 0:
-#     print(feedback_id.pop(banID[0]))
-#     print(feedback.pop(banID[0]))
-# print(Counter(feedback_id))
-k = 0
-for i in feedback_id:
-    if len(i) < 20:
-        if k > 4000:
-            feedback_id.pop(k)
-            feedback.pop(k)
-
-    k += 1
 
 
 print(len(feedback_id))
-# print(Counter(feedback_id))
 print(len(tovarId))
 print(len(date))
 print(len(name))
 print(len(rating))
 print(len(feedback))
 print(len(listt))
-
-
+print(len(likee))
 
 
 
@@ -167,7 +151,7 @@ df = pd.DataFrame({'rewiew_ID' : feedback_id,
                     'Name' : name,
                    'Rating' : rating,
                    'Rewiew' : feedback,
-                   'amount Photo' : listt})
-                   # 'amount LIKE' : likee
-df.to_excel('rewiew.xlsx')
+                   'amount Photo' : listt,
+                   'amount LIKE' : likee})
+df.to_excel('rewiewDOP.xlsx')
 print(df)

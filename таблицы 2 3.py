@@ -66,7 +66,7 @@ g = df.brand.unique()
 df2 = pd.DataFrame({'Brand': br,
                     'id': g})
 
-df.to_excel('brand.xlsx')
+df2.to_excel('brand.xlsx')
 
 
 
