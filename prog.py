@@ -1,4 +1,6 @@
 # coding=utf8
+global login
+import time
 import tkinter
 import tkinter.messagebox
 import customtkinter
@@ -60,12 +62,16 @@ def register():
     for user in users_list:
         if user["login"] == reg_login:
 
-            d = 'пользователь уже существует'
+            d = '                      пользователь уже существует          '
             print(d)
             return d
     if len(reg_password) > 8:
         users_list.append({"username": reg_name, "password": reg_password, "attempts": 5, "login": reg_login})
         write_users_to_csv("users.csv", users_list)
+        d = '                                              успешно                                         '
+        print(d)
+
+        return d, ToplevelWindow.destroy()
     else:
         d = 'пароль должен содержать как минимум 8 символов'
         print(d)
@@ -89,17 +95,19 @@ class ToplevelWindow(customtkinter.CTkToplevel):
 
 
         def press_button():
-            global login
+            # global login
             global password
             login = self.login_entry.get()
             password = self.password_entry.get()
-            self.label1 = customtkinter.CTkLabel(self, text=f"{dlogin()}")
+            g = dlogin()
+            self.label1 = customtkinter.CTkLabel(self, text=f"{g}")
             self.label1.place(relx=0.33, rely=0.75)
-
-
+            if g == 'успешно':
+                app.office_frame.grid(row=0, column=1, sticky="nsew")
+                app.authorization = True
+            return
         self.button = customtkinter.CTkButton(self, text="Готово", command=press_button)
         self.button.place(relx=0.33, rely=0.55)
-
 
 
 
@@ -132,10 +140,8 @@ class ReglevelWindow(customtkinter.CTkToplevel):
             reg_login = self.login_entry.get()
             reg_password = self.password_entry.get()
             reg_name = self.name_entry.get()
-            register()
-            print(reg_name)
-            print(reg_login)
-            print(reg_password)
+            self.gotovo_label = customtkinter.CTkLabel(self, text=f'{register()}')
+            self.gotovo_label.place(relx=0.1, rely=0.75)
 
         self.button = customtkinter.CTkButton(self, text="Готово", command=press_button)
         self.button.place(relx=0.33, rely=0.65)
@@ -182,6 +188,7 @@ class App(customtkinter.CTk):
                                                       command=self.frame_2_button_event)
         self.frame_2_button.grid(row=2, column=0, sticky="ew")
         self.second_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
+        self.office_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
 
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
         self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
@@ -227,6 +234,11 @@ class App(customtkinter.CTk):
 
             self.or_label = customtkinter.CTkLabel(self.second_frame, text="или", font=customtkinter.CTkFont(size=25, weight="bold"))
             self.or_label.place(relx=0.463, rely=0.7)
+
+
+        #CREATE OFFICE FRAME
+        self.hello_label = customtkinter.CTkLabel(self.office_frame, text=f'Привет, {login}')
+        self.hello_label.place(relx=0.463, rely=0.7)
 
         def button_event():
             self.attempts -= 1
@@ -294,6 +306,7 @@ class App(customtkinter.CTk):
         self.frame_2_button.configure(fg_color=("gray75", "gray25") if name == "frame_2" else "transparent")
 
 
+
         # show selected frame
         if name == "home":
             self.home_frame.grid(row=0, column=1, sticky="nsew")
@@ -303,6 +316,7 @@ class App(customtkinter.CTk):
             self.second_frame.grid(row=0, column=1, sticky="nsew")
         else:
             self.second_frame.grid_forget()
+
 
     def home_button_event(self):
         self.select_frame_by_name("home")
@@ -330,6 +344,9 @@ class App(customtkinter.CTk):
 
     def frame_2_button_event(self):
         self.select_frame_by_name("frame_2")
+
+
+
 
     def change_scaling_event(self, new_scaling: str):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
