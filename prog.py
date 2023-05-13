@@ -45,20 +45,31 @@ def write_users_to_csv(file_path, users):
 def dlogin():
     for user in users_list:
         if user["login"] == login and user["password"] == password:
-            user["attempts"] -= 1
-            write_users_to_csv("users.csv", users_list)
             print("успешно")
-            return
+            d = "успешно"
+            return d
+        if user["login"] == login and user["password"] != password:
+            print("неверный пароль")
+            d = "неверный пароль                                       "
+            return d
     print("такого пользователя нет")
-
+    d = "такого пользователя нет"
+    return d
 
 def register():
     for user in users_list:
         if user["login"] == reg_login:
-            print('пользователь уже существует')
-            return
-    users_list.append({"username": reg_name, "password": reg_password, "attempts": 5, "login": reg_login})
-    write_users_to_csv("users.csv", users_list)
+
+            d = 'пользователь уже существует'
+            print(d)
+            return d
+    if len(reg_password) > 8:
+        users_list.append({"username": reg_name, "password": reg_password, "attempts": 5, "login": reg_login})
+        write_users_to_csv("users.csv", users_list)
+    else:
+        d = 'пароль должен содержать как минимум 8 символов'
+        print(d)
+        return d
 
 
 class ToplevelWindow(customtkinter.CTkToplevel):
@@ -82,7 +93,8 @@ class ToplevelWindow(customtkinter.CTkToplevel):
             global password
             login = self.login_entry.get()
             password = self.password_entry.get()
-            dlogin()
+            self.label1 = customtkinter.CTkLabel(self, text=f"{dlogin()}")
+            self.label1.place(relx=0.33, rely=0.75)
 
 
         self.button = customtkinter.CTkButton(self, text="Готово", command=press_button)
