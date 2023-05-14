@@ -26,8 +26,6 @@ with open("model/isReal_model.pickle", "rb") as f:
 
 
 
-
-
 def read_users_from_csv(file_path):
     df = pd.read_csv(file_path)
     if df.columns.tolist() != ["username", "password", "attempts", "login"]:
@@ -95,7 +93,7 @@ class ToplevelWindow(customtkinter.CTkToplevel):
 
 
         def press_button():
-            # global login
+            global login
             global password
             login = self.login_entry.get()
             password = self.password_entry.get()
@@ -237,7 +235,7 @@ class App(customtkinter.CTk):
 
 
         #CREATE OFFICE FRAME
-        self.hello_label = customtkinter.CTkLabel(self.office_frame, text=f'Привет, {login}')
+        self.hello_label = customtkinter.CTkLabel(self.office_frame, text=f'Привет!')
         self.hello_label.place(relx=0.463, rely=0.7)
 
         def button_event():
