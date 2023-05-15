@@ -26,131 +26,12 @@ with open("model/isReal_model.pickle", "rb") as f:
 
 
 
-def read_users_from_csv(file_path):
-    df = pd.read_csv(file_path)
-    if df.columns.tolist() != ["username", "password", "attempts", "login"]:
-        raise ValueError("Некорректный формат файла")
-    users_ = df.to_dict(orient="records")
-    return users_
-
-
-users_list = read_users_from_csv("users.csv")
-
-
-def write_users_to_csv(file_path, users):
-    df = pd.DataFrame(users)
-    df.to_csv(file_path, index=False)
-
-
-def dlogin():
-    for user in users_list:
-        if user["login"] == login and user["password"] == password:
-            print("успешно")
-            d = "успешно"
-            return d
-        if user["login"] == login and user["password"] != password:
-            print("неверный пароль")
-            d = "неверный пароль                                       "
-            return d
-    print("такого пользователя нет")
-    d = "такого пользователя нет"
-    return d
-
-def register():
-    for user in users_list:
-        if user["login"] == reg_login:
-
-            d = '                      пользователь уже существует          '
-            print(d)
-            return d
-    if len(reg_password) > 8:
-        users_list.append({"username": reg_name, "password": reg_password, "attempts": 5, "login": reg_login})
-        write_users_to_csv("users.csv", users_list)
-        d = '                                              успешно                                         '
-        print(d)
-
-        return d, ToplevelWindow.destroy()
-    else:
-        d = 'пароль должен содержать как минимум 8 символов'
-        print(d)
-        return d
-
-
-class ToplevelWindow(customtkinter.CTkToplevel):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.geometry("400x300")
-        self.title("AuthenticFeedback")
-
-        self.label = customtkinter.CTkLabel(self, text="Вход", font=customtkinter.CTkFont(size=15, weight="bold"))
-        self.label.place(relx=0.33, rely=0.15)
-
-        self.login_entry = customtkinter.CTkEntry(self, placeholder_text="Login")
-        self.login_entry.place(relx=0.33, rely=0.25)
-
-        self.password_entry = customtkinter.CTkEntry(self, placeholder_text="Password", show='*')
-        self.password_entry.place(relx=0.33, rely=0.4)
-
-
-        def press_button():
-            global login
-            global password
-            login = self.login_entry.get()
-            password = self.password_entry.get()
-            g = dlogin()
-            self.label1 = customtkinter.CTkLabel(self, text=f"{g}")
-            self.label1.place(relx=0.33, rely=0.75)
-            if g == 'успешно':
-                app.office_frame.grid(row=0, column=1, sticky="nsew")
-                app.authorization = True
-            return
-        self.button = customtkinter.CTkButton(self, text="Готово", command=press_button)
-        self.button.place(relx=0.33, rely=0.55)
-
-
-
-
-class ReglevelWindow(customtkinter.CTkToplevel):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.geometry("400x300")
-        self.title("AuthenticFeedback")
-
-        self.label = customtkinter.CTkLabel(self, text="Регистрация", font=customtkinter.CTkFont(size=15, weight="bold"))
-        self.label.place(relx=0.33, rely=0.10)
-
-        self.login_entry = customtkinter.CTkEntry(self, placeholder_text="Login")
-        self.login_entry.place(relx=0.33, rely=0.2)
-
-        self.name_entry = customtkinter.CTkEntry(self, placeholder_text="Name")
-        self.name_entry.place(relx=0.33, rely=0.35)
-
-        self.password_entry = customtkinter.CTkEntry(self, placeholder_text="Password", show='*')
-        self.password_entry.place(relx=0.33, rely=0.5)
-
-
-
-
-        def press_button():
-            global reg_name
-            global reg_password
-            global reg_login
-            reg_login = self.login_entry.get()
-            reg_password = self.password_entry.get()
-            reg_name = self.name_entry.get()
-            self.gotovo_label = customtkinter.CTkLabel(self, text=f'{register()}')
-            self.gotovo_label.place(relx=0.1, rely=0.75)
-
-        self.button = customtkinter.CTkButton(self, text="Готово", command=press_button)
-        self.button.place(relx=0.33, rely=0.65)
-
 
 class App(customtkinter.CTk):
     def __init__(self):
-
+        self.attempts = 3
         super().__init__()
         self.authorization = False
-        self.attempts = 1
         # configure window
         self.title("AuthenticFeedback")
         self.geometry(f"{1100}x{580}")
@@ -216,31 +97,28 @@ class App(customtkinter.CTk):
         self.label = customtkinter.CTkLabel(self.home_frame, text="Отзыв:", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.label.place(relx=0.13, rely=0.07)
 
-        self.label3 = customtkinter.CTkLabel(self.home_frame, text=f"Кол-во бесплатных попыток:{self.attempts}", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.label3.place(relx=0.55, rely=0.07)
+        #self.label3 = customtkinter.CTkLabel(self.home_frame, text=f"Кол-во бесплатных попыток:{self.attempts}", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
+        #self.label3.place(relx=0.55, rely=0.07)
 
         #create second frame
         if self.authorization == False:
             self.not_auth_label = customtkinter.CTkLabel(self.second_frame, text="Чтобы войти в кабинет, нужно:", font=customtkinter.CTkFont(size=25, weight="bold"))
             self.not_auth_label.place(relx=0.275, rely=0.55)
 
-            self.login_window_button = customtkinter.CTkButton(self.second_frame, text="Войти", command=self.open_toplevel)
+            self.login_window_button = customtkinter.CTkButton(self.second_frame, text="Войти")
             self.login_window_button.place(relx=0.275, rely=0.7)
 
-            self.reg_window_button = customtkinter.CTkButton(self.second_frame, text="Зарегистрироваться", fg_color=["white", "#171714"], border_color="yellow", border_width=2, text_color=["black", "white"], command=self.open_reglevel)
+            self.reg_window_button = customtkinter.CTkButton(self.second_frame, text="Зарегистрироваться", fg_color=["white", "#171714"], border_color="yellow", border_width=2, text_color=["black", "white"])
             self.reg_window_button.place(relx=0.545, rely=0.7)
 
             self.or_label = customtkinter.CTkLabel(self.second_frame, text="или", font=customtkinter.CTkFont(size=25, weight="bold"))
             self.or_label.place(relx=0.463, rely=0.7)
 
 
-        #CREATE OFFICE FRAME
-        self.hello_label = customtkinter.CTkLabel(self.office_frame, text=f'Привет!')
-        self.hello_label.place(relx=0.463, rely=0.7)
 
         def button_event():
             self.attempts -= 1
-            self.label3 = customtkinter.CTkLabel(self.home_frame, text=f"Кол-во бесплатных попыток:{self.attempts}", anchor="w",
+            self.label3 = customtkinter.CTkLabel(self.home_frame, text=f"Кол-во бесплатных попыток:  {self.attempts}", anchor="w",
                                                  font=customtkinter.CTkFont(size=20, weight="bold"))
             self.label3.place(relx=0.55, rely=0.07)
             textbox_content = self.textbox.get("0.0", "end")
@@ -268,7 +146,7 @@ class App(customtkinter.CTk):
                 real_predict = 'YES'
             else:
                 real_predict = 'NO'
-            if self.attempts == 0:
+            if self.attempts <= 0:
                 self.but.configure(state="disabled")
 
 
@@ -291,7 +169,7 @@ class App(customtkinter.CTk):
 
 
         # set default values
-        self.appearance_mode_optionemenu.set("Dark")
+        self.appearance_mode_optionemenu.set("System")
         self.scaling_optionemenu.set("100%")
         self.select_frame_by_name("home")
         self.toplevel_window = None
@@ -327,18 +205,7 @@ class App(customtkinter.CTk):
         self.update()
         print(new_theme_mode)
 
-    def open_toplevel(self):
-        if self.toplevel_window is None or not self.toplevel_window.winfo_exists():
-            self.toplevel_window = ToplevelWindow(self)  # create window if its None or destroyed
-        else:
-            self.toplevel_window.focus()  # if window exists focus it
 
-
-    def open_reglevel(self):
-        if self.reg_window is None or not self.reg_window.winfo_exists():
-            self.reg_window = ReglevelWindow(self)  # create window if its None or destroyed
-        else:
-            self.reg_window.focus()  # if window exists focus it
 
     def frame_2_button_event(self):
         self.select_frame_by_name("frame_2")
@@ -350,10 +217,34 @@ class App(customtkinter.CTk):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
         customtkinter.set_widget_scaling(new_scaling_float)
 
+    def save_data(self):
+        with open("data.pickle", "wb") as f:
+            pickle.dump(self.attempts, f)
 
+    def load_data(self):
+        try:
+            with open("data.pickle", "rb") as f:
+                self.attempts = pickle.load(f)
+                print(self.attempts)
+        except FileNotFoundError:
+            self.attempts = 3
+
+    def update_attempts_label(self):
+        self.label3 = customtkinter.CTkLabel(self.home_frame, )
+        self.label3.configure(text=f"Кол-во бесплатных попыток:  {self.attempts}", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.label3.place(relx=0.55, rely=0.07)
+        if self.attempts <= 0:
+            self.but.configure(state="disabled")
+
+    def exit_program(self):
+        self.save_data()
+        self.destroy()
 
 
 
 if __name__ == "__main__":
     app = App()
+    app.load_data()
+    app.update_attempts_label()
+    app.protocol("WM_DELETE_WINDOW", app.exit_program)
     app.mainloop()
