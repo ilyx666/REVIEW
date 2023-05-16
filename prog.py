@@ -24,7 +24,7 @@ with open("model/victor.pickle", "rb") as f:
     vectorizer = pickle.load(f)
 with open("model/victor_dudka.pickle", "rb") as f:
     vectorizer2 = pickle.load(f)
-with open("model/isReal_model.pickle", "rb") as f:
+with open("model/isReal_model_log_reg.pickle", "rb") as f:
     gb = pickle.load(f)
 
 
@@ -49,9 +49,9 @@ class App(customtkinter.CTk):
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="AuthenticFeedback", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.home_image = customtkinter.CTkImage(light_image=Image.open("home_dark.png"), dark_image=Image.open("home_light_yellow.png"), size=(20, 20))
-        self.kab_image = customtkinter.CTkImage(light_image=Image.open("ng_dark.png"),
-                                                 dark_image=Image.open("ng_yellow.png"), size=(20, 20))
+        self.home_image = customtkinter.CTkImage(light_image=Image.open("image/home_dark.png"), dark_image=Image.open("image/home_light_yellow.png"), size=(20, 20))
+        self.kab_image = customtkinter.CTkImage(light_image=Image.open("image/ng_dark.png"),
+                                                 dark_image=Image.open("image/ng_yellow.png"), size=(20, 20))
         self.home_button = customtkinter.CTkButton(self.sidebar_frame, corner_radius=0, height=40, border_spacing=10,
                                                    text="Главная",
                                                    fg_color="transparent", text_color=("gray10", "gray90"),
@@ -150,7 +150,7 @@ class App(customtkinter.CTk):
             if real_predict == 1:
                 real_predict = 'YES'
             else:
-                real_predict = 'NO'
+                real_predict = 'NO        '
 
 
 
