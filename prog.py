@@ -10,6 +10,9 @@ from PIL import Image
 import csv
 import os
 import pandas as pd
+import nltk
+from nltk import ngrams
+nltk.download('punkt')
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 yellow = "themes/yellow.json"
 pink = "themes/pink.json"
@@ -47,16 +50,23 @@ class App(customtkinter.CTk):
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="AuthenticFeedback", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
         self.home_image = customtkinter.CTkImage(light_image=Image.open("home_dark.png"), dark_image=Image.open("home_light_yellow.png"), size=(20, 20))
-        self.kab_image = customtkinter.CTkImage(light_image=Image.open("kab_dark.png"),
-                                                 dark_image=Image.open("kab_light_yellow.png"), size=(20, 20))
+        self.kab_image = customtkinter.CTkImage(light_image=Image.open("ng_dark.png"),
+                                                 dark_image=Image.open("ng_yellow.png"), size=(20, 20))
         self.home_button = customtkinter.CTkButton(self.sidebar_frame, corner_radius=0, height=40, border_spacing=10,
                                                    text="Главная",
                                                    fg_color="transparent", text_color=("gray10", "gray90"),
                                                    hover_color=("gray70", "gray30"),
-                                                   image=self.home_image, anchor="w")
+                                                   image=self.home_image, anchor="w", command=self.home_button_event)
         self.home_button.grid(row=1, column=0, sticky="ew")
+        self.ngram_button = customtkinter.CTkButton(self.sidebar_frame, corner_radius=0, height=40, border_spacing=10,
+                                                   text="N-gram",
+                                                   fg_color="transparent", text_color=("gray10", "gray90"),
+                                                   hover_color=("gray70", "gray30"), anchor="w", command=self.ngram_button_event, image=self.kab_image)
+        self.ngram_button.grid(row=2, column=0, sticky="ew")
         self.home_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.home_frame.grid_columnconfigure(0, weight=1)
+        self.ngram_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
+        # self.ngram_frame.grid_columnconfigure(0, weight=1)
 
 
 
@@ -83,7 +93,7 @@ class App(customtkinter.CTk):
         self.textbox = customtkinter.CTkTextbox(self.home_frame, width=700)
         self.textbox.grid(row=0, column=1, padx=100, pady=70)
 
-        self.entry = customtkinter.CTkEntry(self.home_frame, width=40)
+        self.entry = customtkinter.CTkOptionMenu(self.home_frame, values=['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
         self.entry.place(relx=0.34, rely=0.67)
 
         self.label2 = customtkinter.CTkLabel(self.home_frame, text="Кол-во прикрепленных фото:", anchor="w")
@@ -92,20 +102,39 @@ class App(customtkinter.CTk):
         self.label = customtkinter.CTkLabel(self.home_frame, text="Отзыв:", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.label.place(relx=0.13, rely=0.07)
 
+        #create ngram frame
+        self.ngram_label = customtkinter.CTkLabel(self.ngram_frame, text='Сколько n-грам вы хотите?', font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.ngram_label.place(relx=0.125, rely=0.1)
 
+        self.ngram1_label = customtkinter.CTkLabel(self.ngram_frame, text='Введите текст:',
+                                                  font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.ngram1_label.place(relx=0.125, rely=0.2)
 
+        self.ngram_menu = customtkinter.CTkOptionMenu(self.ngram_frame, values=['1', '2', '3', '4', '5'])
+        self.ngram_menu.place(relx=0.6, rely=0.1)
 
+        self.ngram_input = customtkinter.CTkTextbox(self.ngram_frame, width=575, height=100)
+        self.ngram_input.place(relx=0.125, rely=0.25)
+
+        self.ngram2_label = customtkinter.CTkLabel(self.ngram_frame, text='Результат:',
+                                                   font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.ngram2_label.place(relx=0.125, rely=0.5)
+
+        self.ngram_result = customtkinter.CTkButton(self.ngram_frame, text='Готово', command=self.ngram_button_res)
+        self.ngram_result.place(relx=0.6, rely=0.45)
+
+        self.ngram_output = customtkinter.CTkTextbox(self.ngram_frame, width=575, height=200)
+        self.ngram_output.grid(row=0, column=1, padx=115, pady=340)
 
         def button_event():
             textbox_content = self.textbox.get("0.0", "end")
             print(textbox_content)
             self.textbox.delete("0.0", "end")
             try:
-                entry_content = self.entry.get()
+                entry_content = int(self.entry.get())
             except ValueError:
                 entry_content = 0
             print(entry_content)
-            self.entry.delete(0, "end")
 
             text = f"{preprocess_text(textbox_content)} Amount Photo: {entry_content} Len Review: {len(preprocess_text(textbox_content))}"
             vectorized_text = vectorizer.transform([text])
@@ -116,7 +145,7 @@ class App(customtkinter.CTk):
             real_predict = gb.predict(vectorizer2.transform([text])[0])
             if len(textbox_content) == 1:
                 real_predict = 0
-            if len(entry_content) <= 1:
+            if entry_content == 0:
                 rate_predict = 0
             if real_predict == 1:
                 real_predict = 'YES'
@@ -154,14 +183,30 @@ class App(customtkinter.CTk):
     def select_frame_by_name(self, name):
         # set button color for selected button
         self.home_button.configure(fg_color=("gray75", "gray25") if name == "home" else "transparent")
-
+        self.ngram_button.configure(fg_color=("gray75", "gray25") if name == "ngram" else "transparent")
         # show selected frame
         if name == "home":
             self.home_frame.grid(row=0, column=1, sticky="nsew")
         else:
             self.home_frame.grid_forget()
+        if name == "ngram":
+            self.ngram_frame.grid(row=0, column=1, sticky="nsew")
+        else:
+            self.ngram_frame.grid_forget()
     def home_button_event(self):
         self.select_frame_by_name("home")
+    def ngram_button_event(self):
+        self.select_frame_by_name("ngram")
+
+    def ngram_button_res(self):
+        text = self.ngram_input.get("0.0", "end")
+        words = nltk.word_tokenize(text)
+        n = self.ngram_menu.get()
+        grams = list(ngrams(words, int(n)))
+        for i in reversed(grams):
+            self.ngram_output.insert("0.0", f"{i}\n")
+
+
 
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
