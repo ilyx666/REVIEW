@@ -12,6 +12,7 @@ import os
 import pandas as pd
 import nltk
 from nltk import ngrams
+import pymorphy2
 nltk.download('punkt')
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 yellow = "themes/yellow.json"
@@ -27,6 +28,7 @@ with open("model/victor_dudka.pickle", "rb") as f:
 with open("model/isReal_model_log_reg.pickle", "rb") as f:
     gb = pickle.load(f)
 
+morph = pymorphy2.MorphAnalyzer()
 
 
 
@@ -64,7 +66,7 @@ class App(customtkinter.CTk):
                                                    hover_color=("gray70", "gray30"), anchor="w", command=self.ngram_button_event, image=self.kab_image)
         self.ngram_button.grid(row=2, column=0, sticky="ew")
         self.home_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
-        self.home_frame.grid_columnconfigure(0, weight=1)
+        # self.home_frame.grid_columnconfigure(0, weight=1)
         self.ngram_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         # self.ngram_frame.grid_columnconfigure(0, weight=1)
 
@@ -91,16 +93,22 @@ class App(customtkinter.CTk):
 
         # create home frame
         self.textbox = customtkinter.CTkTextbox(self.home_frame, width=700)
-        self.textbox.grid(row=0, column=1, padx=100, pady=70)
+        self.textbox.grid(padx=112, pady=70)
 
-        self.entry = customtkinter.CTkOptionMenu(self.home_frame, values=['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+        self.entry = customtkinter.CTkOptionMenu(self.home_frame, values=['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], width=100)
         self.entry.place(relx=0.34, rely=0.67)
 
         self.label2 = customtkinter.CTkLabel(self.home_frame, text="Кол-во прикрепленных фото:", anchor="w")
         self.label2.place(relx=0.125, rely=0.67)
 
+        self.label_speech = customtkinter.CTkLabel(self.home_frame, text="Сделать разбор частей речи?", anchor="w")
+        self.label_speech.place(relx=0.46, rely=0.67)
+
+        self.tf_speech = customtkinter.CTkCheckBox(self.home_frame, text='')
+        self.tf_speech.place(relx=0.675, rely=0.67)
+
         self.label = customtkinter.CTkLabel(self.home_frame, text="Отзыв:", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.label.place(relx=0.13, rely=0.07)
+        self.label.place(relx=0.12, rely=0.07)
 
         #create ngram frame
         self.ngram_label = customtkinter.CTkLabel(self.ngram_frame, text='Сколько n-грам вы хотите?', font=customtkinter.CTkFont(size=20, weight="bold"))
@@ -125,7 +133,8 @@ class App(customtkinter.CTk):
 
         self.ngram_output = customtkinter.CTkTextbox(self.ngram_frame, width=575, height=200)
         self.ngram_output.grid(row=0, column=1, padx=115, pady=340)
-
+        self.label_rating = customtkinter.CTkLabel(self.home_frame)
+        self.label_real = customtkinter.CTkLabel(self.home_frame)
         def button_event():
             textbox_content = self.textbox.get("0.0", "end")
             print(textbox_content)
@@ -151,13 +160,30 @@ class App(customtkinter.CTk):
                 real_predict = 'YES'
             else:
                 real_predict = 'NO        '
+            if self.tf_speech.get() == 1:
+                words = preprocess_text(textbox_content)
+                self.textbox.insert('0.0', f'Preprocess content: {words}\n')
+                words = words.split()
+                for word in words:
+                    parsed_word = morph.parse(word)[0]
+                    pos = parsed_word.tag.POS
+                    if pos == 'NOUN':
+                        pos = 'существительное'
+                    if pos == 'INFN':
+                        pos = 'глагол'
+                    if pos == 'ADJF' or pos == 'ADJS':
+                        pos = 'прилагательное'
+                    if pos == 'INTJ':
+                        pos = 'междометие'
+                    self.textbox.insert('0.0', f"Слово: {word}, Часть речи: {pos}\n")
+            self.clear_button = customtkinter.CTkButton(self.home_frame, command=self.clear_button_event, text='Очистить')
+            self.clear_button.place(relx=0.735, rely=0.82)
 
-
-
-            self.label_rating = customtkinter.CTkLabel(self.home_frame, text=f"Rating: {rate_predict}", anchor="w", font=customtkinter.CTkFont(size=20, weight="bold"))
+            self.label_rating.configure(text=f"Rating: {rate_predict}", anchor="w",
+                                                   font=customtkinter.CTkFont(size=20, weight="bold"))
             self.label_rating.place(relx=0.12, rely=0.75)
 
-            self.label_real = customtkinter.CTkLabel(self.home_frame, text=f"TRUE?: {real_predict}", anchor="w",
+            self.label_real.configure(text=f"TRUE?: {real_predict}", anchor="w",
                                                        font=customtkinter.CTkFont(size=20, weight="bold"))
             self.label_real.place(relx=0.12, rely=0.825)
 
@@ -198,6 +224,13 @@ class App(customtkinter.CTk):
     def ngram_button_event(self):
         self.select_frame_by_name("ngram")
 
+    def clear_button_event(self):
+        self.textbox.delete('0.0', 'end')
+        try:
+            self.label_rating.configure(text='')
+            self.label_real.configure(text='')
+        except ValueError:
+            pass
     def ngram_button_res(self, num : str):
         self.ngram_output.delete("0.0", "end")
         text = self.ngram_input.get("0.0", "end")
