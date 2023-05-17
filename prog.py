@@ -104,24 +104,24 @@ class App(customtkinter.CTk):
 
         #create ngram frame
         self.ngram_label = customtkinter.CTkLabel(self.ngram_frame, text='Сколько n-грам вы хотите?', font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.ngram_label.place(relx=0.125, rely=0.1)
+        self.ngram_label.place(relx=0.125, rely=0.425)
 
         self.ngram1_label = customtkinter.CTkLabel(self.ngram_frame, text='Введите текст:',
                                                   font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.ngram1_label.place(relx=0.125, rely=0.2)
-
-        self.ngram_menu = customtkinter.CTkOptionMenu(self.ngram_frame, values=['1', '2', '3', '4', '5'])
-        self.ngram_menu.place(relx=0.6, rely=0.1)
+        self.ngram1_label.place(relx=0.125, rely=0.1)
 
         self.ngram_input = customtkinter.CTkTextbox(self.ngram_frame, width=575, height=100)
-        self.ngram_input.place(relx=0.125, rely=0.25)
+        self.ngram_input.place(relx=0.125, rely=0.15)
+
+
+
 
         self.ngram2_label = customtkinter.CTkLabel(self.ngram_frame, text='Результат:',
                                                    font=customtkinter.CTkFont(size=20, weight="bold"))
         self.ngram2_label.place(relx=0.125, rely=0.5)
 
-        self.ngram_result = customtkinter.CTkButton(self.ngram_frame, text='Готово', command=self.ngram_button_res)
-        self.ngram_result.place(relx=0.6, rely=0.45)
+        self.ngram_result = customtkinter.CTkButton(self.ngram_frame, text='Готово', command=self.ngram_button2)
+        self.ngram_result.place(relx=0.6, rely=0.35)
 
         self.ngram_output = customtkinter.CTkTextbox(self.ngram_frame, width=575, height=200)
         self.ngram_output.grid(row=0, column=1, padx=115, pady=340)
@@ -198,16 +198,29 @@ class App(customtkinter.CTk):
     def ngram_button_event(self):
         self.select_frame_by_name("ngram")
 
-    def ngram_button_res(self):
+    def ngram_button_res(self, num : str):
+        self.ngram_output.delete("0.0", "end")
         text = self.ngram_input.get("0.0", "end")
         words = nltk.word_tokenize(text)
-        n = self.ngram_menu.get()
-        grams = list(ngrams(words, int(n)))
+        grams = list(ngrams(words, int(num)))
         for i in reversed(grams):
             self.ngram_output.insert("0.0", f"{i}\n")
 
 
-
+    def ngram_button2(self):
+        text_input = self.ngram_input.get("0.0", "end")
+        text_input = text_input.split()
+        val = []
+        k = 1
+        for i in range(len(text_input)):
+            val.append(str(k))
+            k += 1
+        self.ngram_menu = customtkinter.CTkOptionMenu(self.ngram_frame, command=self.ngram_button_res)
+        if len(val) > 0:
+            self.ngram_menu.configure(values=val)
+        else:
+            self.ngram_menu.configure(values=['0'])
+        self.ngram_menu.place(relx=0.6, rely=0.425)
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
