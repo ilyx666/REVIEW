@@ -12,7 +12,7 @@ import os
 import pandas as pd
 import nltk
 from nltk import ngrams
-import pymorphy2
+
 nltk.download('punkt')
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 yellow = "themes/yellow.json"
@@ -28,7 +28,6 @@ with open("model/victor_dudka.pickle", "rb") as f:
 with open("model/isReal_model_log_reg.pickle", "rb") as f:
     gb = pickle.load(f)
 
-morph = pymorphy2.MorphAnalyzer()
 
 
 
@@ -243,25 +242,51 @@ class App(customtkinter.CTk):
         except ValueError:
             pass
         if self.tf_speech.get() == 1:
+            from pymystem3 import Mystem
+
+            # Создаем экземпляр класса Mystem
+            mystem = Mystem()
+
             words = preprocess_text(textbox_content)
-            self.textbox.insert('0.0', f'Preprocess content: {words}\n')
-            words = words.split()
-            for word in words:
-                parsed_word = morph.parse(word)[0]
-                pos = parsed_word.tag.POS
-                if pos == 'NOUN':
-                    pos = 'существительное'
-                if pos == 'INFN':
-                    pos = 'глагол'
-                if pos == 'ADJF' or pos == 'ADJS':
-                    pos = 'прилагательное'
-                if pos == 'INTJ':
-                    pos = 'междометие'
-                if pos == 'ADVB':
-                    pos = 'наречие'
-                if pos == None:
-                    pos = "Это не похоже на русское слово"
-                self.ngram_output2.insert('0.0', f"Слово: {word}, Часть речи: {pos}\n")
+
+            # Производим морфологический анализ текста
+            analysis = mystem.analyze(words)
+
+            # Извлекаем части речи для каждого токена
+            for token in analysis:
+                if 'analysis' in token and token['analysis']:
+                    word = token['text']
+                    pos = token['analysis'][0]['gr'].split(',')[0].split('=')[0]
+                    if pos == 'S':
+                        pos = 'существительное'
+                    if pos == 'V':
+                        pos = 'глагол'
+                    if pos == 'A':
+                        pos = 'прилагательное'
+                    if pos == 'INTJ':
+                        pos = 'междометие'
+                    if pos == 'ADV':
+                        pos = 'наречие'
+                    self.ngram_output2.insert('0.0', f"Слово: {word}, Часть речи: {pos}\n")
+
+        #     words = preprocess_text(textbox_content)
+        #     doc = Doc(words)
+        #     doc.segment(MorphVocab())
+        #     for token in doc.tokens:
+        #         pos = parsed_word.tag.POS
+        #         if pos == 'NOUN':
+        #             pos = 'существительное'
+        #         if pos == 'INFN':
+        #             pos = 'глагол'
+        #         if pos == 'ADJF' or pos == 'ADJS':
+        #             pos = 'прилагательное'
+        #         if pos == 'INTJ':
+        #             pos = 'междометие'
+        #         if pos == 'ADVB':
+        #             pos = 'наречие'
+        #         if pos == None:
+        #             pos = "Это не похоже на русское слово"
+        #         self.ngram_output2.insert('0.0', f"Слово: {word}, Часть речи: {pos}\n")
 
 
 
